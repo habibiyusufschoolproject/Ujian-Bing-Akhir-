@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reading Materials Assessment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .option-card { transition: all 0.2s ease; }
+        .option-card:hover { transform: translateY(-2px); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.4s ease forwards; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen font-sans">
+
+    <div id="app" class="max-w-3xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-indigo-700">Advanced Reading Comprehension</h1>
+            <p class="text-slate-500 mt-2">Analytical Assessment: 40 Questions</p>
+            <div id="progress-container" class="mt-6 bg-slate-200 h-2 rounded-full overflow-hidden">
+                <div id="progress-bar" class="bg-indigo-600 h-full w-0 transition-all duration-300"></div>
+            </div>
+            <p id="stats" class="text-sm mt-2 font-medium text-slate-600">Question 1 of 40</p>
+        </header>
+
+        <!-- Question Section -->
+        <main id="quiz-container" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 fade-in">
+            <div id="question-content">
+                <h2 id="question-text" class="text-xl font-semibold mb-6">Loading question...</h2>
+                <div id="options-grid" class="grid gap-4">
+                    <!-- Options injected here -->
+                </div>
+            </div>
+
+            <!-- Feedback (Hidden by default) -->
+            <div id="feedback" class="hidden mt-8 p-4 rounded-xl border-l-4">
+                <p id="feedback-result" class="font-bold mb-1"></p>
+                <p id="feedback-rationale" class="text-sm text-slate-700"></p>
+                <button id="next-btn" class="mt-4 bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors">
+                    Next Question
+                </button>
+            </div>
+        </main>
+
+        <!-- Final Results -->
+        <div id="results-container" class="hidden bg-white rounded-2xl shadow-lg border border-slate-200 p-10 text-center fade-in">
+            <h2 class="text-4xl font-bold text-indigo-700 mb-4">Assessment Complete</h2>
+            <div class="text-6xl font-black mb-6" id="final-score">0/40</div>
+            <p id="performance-msg" class="text-lg text-slate-600 mb-8"></p>
+            <button onclick="location.reload()" class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all">
+                Restart Assessment
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            // --- SECTION 1: CROWS ---
+            {
+                "question": "True or False: The text regarding crows suggests their success is purely accidental due to living near humans.",
+                "answerOptions": [
+                    { "text": "True", "isCorrect": false },
+                    { "text": "False", "rationale": "The text states their success is 'not due to chance' but 'extraordinary cognitive flexibility'.", "isCorrect": true }
+                ]
+            },
+            {
+                "question": "In the sentence 'crows have not only survived but are thriving', the word 'thriving' most nearly means:",
+                "answerOptions": [
+                    { "text": "Declining slowly", "isCorrect": false },
+                    { "text": "Flourishing vigorously", "rationale": "Thriving indicates extreme success and growth in an environment.", "isCorrect": true },
+                    { "text": "Adapting painfully", "isCorrect": false },
+                    { "text": "Hiding safely", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "What does the behavior of Tokyo crows specifically demonstrate regarding their logic?",
+                "answerOptions": [
+                    { "text": "A basic instinct for migration", "isCorrect": false },
+                    { "text": "Sophisticated understanding of cause and effect", "rationale": "Using cars to crack nuts requires understanding the relationship between the vehicle and the shell breaking.", "isCorrect": true },
+                    { "text": "Aggressive behavior toward technology", "isCorrect": false },
+                    { "text": "A preference for human food", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "True or False: Scientists believe crow intelligence is a fixed, preprogrammed instinct.",
+                "answerOptions": [
+                    { "text": "True", "isCorrect": false },
+                    { "text": "False", "rationale": "The text suggests their abilities are 'constantly shaped by the context' rather than fixed.", "isCorrect": true }
+                ]
+            },
+            {
+                "question": "Which phrase best describes the urban challenges crows face?",
+                "answerOptions": [
+                    { "text": "Fixed and predictable patterns", "isCorrect": false },
+                    { "text": "Dynamic and human-dominated landscapes", "rationale": "This captures the complexity and unpredictability mentioned in the text.", "isCorrect": true },
+                    { "text": "Natural and serene environments", "isCorrect": false },
+                    { "text": "Hostile and impossible barriers", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "The text compares crow intelligence to which other group?",
+                "answerOptions": [
+                    { "text": "Domesticated pets", "isCorrect": false },
+                    { "text": "Primates", "rationale": "The text mentions problem-solving abilities comparable to primates.", "isCorrect": true },
+                    { "text": "Migratory insects", "isCorrect": false },
+                    { "text": "Prehistoric reptiles", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "True or False: Crows in Tokyo retrieve their nuts while cars are still moving.",
+                "answerOptions": [
+                    { "text": "True", "isCorrect": false },
+                    { "text": "False", "rationale": "They wait for pedestrian crossings/lights to safely retrieve them.", "isCorrect": true }
+                ]
+            },
+            {
+                "question": "What is the core theme of the crow article?",
+                "answerOptions": [
+                    { "text": "Urban pollution", "isCorrect": false },
+                    { "text": "Cognitive flexibility and innovation", "isCorrect": true },
+                    { "text": "The dangers of Tokyo traffic", "isCorrect": false },
+                    { "text": "Avian nesting habits", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "Paraphrase: 'Crows are innovating, often outsmarting humans.'",
+                "answerOptions": [
+                    { "text": "Crows follow human rules.", "isCorrect": false },
+                    { "text": "Crows create new solutions that exceed human expectations of birds.", "isCorrect": true },
+                    { "text": "Humans are teaching crows how to live.", "isCorrect": false },
+                    { "text": "Crows are becoming more like humans physically.", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "True or False: Environmental pressure is a catalyst for crow intelligence.",
+                "answerOptions": [
+                    { "text": "True", "rationale": "The text states cognitive abilities emerge and evolve in response to environmental pressures.", "isCorrect": true },
+                    { "text": "False", "isCorrect": false }
+                ]
+            },
+
+            // --- SECTION 2: ANTIBIOTICS ---
+            {
+                "question": "Why does penicillin cause bacteria to die?",
+                "answerOptions": [
+                    { "text": "It starves them of oxygen.", "isCorrect": false },
+                    { "text": "It prevents the formation of a complete cell wall.", "isCorrect": true },
+                    { "text": "It freezes their cytoplasm.", "isCorrect": false },
+                    { "text": "It encourages them to fight each other.", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "True or False: Resistant bacteria are a modern creation of scientists.",
+                "answerOptions": [
+                    { "text": "True", "isCorrect": false },
+                    { "text": "False", "rationale": "The text explains they occur naturally due to genetic variation in any population.", "isCorrect": true }
+                ]
+            },
+            {
+                "question": "The text describes the antibiotic as a 'godsend' for resistant bacteria because:",
+                "answerOptions": [
+                    { "text": "It provides nutrients for them.", "isCorrect": false },
+                    { "text": "It eliminates their competition (the non-resistant ones).", "isCorrect": true },
+                    { "text": "It changes their DNA for the better.", "isCorrect": false },
+                    { "text": "It makes them glow in the dark.", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "What happened in the late 1980s regarding antibiotic research?",
+                "answerOptions": [
+                    { "text": "A sudden breakthrough occurred.", "isCorrect": false },
+                    { "text": "Companies became complacent and focused on more profitable areas.", "isCorrect": true },
+                    { "text": "The government banned all research.", "isCorrect": false },
+                    { "text": "Bacteria became friendly.", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "True or False: According to the text, the 'war' against bacteria is far from over.",
+                "answerOptions": [
+                    { "text": "True", "isCorrect": true },
+                    { "text": "False", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "What is the 'gap' mentioned in the antibiotics text?",
+                "answerOptions": [
+                    { "text": "A gap in the cell wall of bacteria.", "isCorrect": false },
+                    { "text": "The time between resistance appearing and new drugs being developed.", "isCorrect": true },
+                    { "text": "The distance between hospitals.", "isCorrect": false },
+                    { "text": "A hole in medical history.", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "The term 'Gene Therapy' in the text refers to:",
+                "answerOptions": [
+                    { "text": "Talking to bacteria.", "isCorrect": false },
+                    { "text": "Replacing defective genes with healthy ones.", "isCorrect": true },
+                    { "text": "Mapping the human genome for fun.", "isCorrect": false },
+                    { "text": "Sterilizing surgical tools.", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "True or False: Some Staphylococcus strains in certain hospitals are resistant to almost all antibiotics.",
+                "answerOptions": [
+                    { "text": "True", "isCorrect": true },
+                    { "text": "False", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "What is the 'lethal mistake' described in the context of antibiotic use?",
+                "answerOptions": [
+                    { "text": "Using too much at once.", "isCorrect": false },
+                    { "text": "Failing to recognize that bacteria evolve.", "isCorrect": true },
+                    { "text": "Mixing antibiotics with food.", "isCorrect": false },
+                    { "text": "Storing them in the fridge.", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "Paraphrase: 'Bacteria reproduce at a staggering rate.'",
+                "answerOptions": [
+                    { "text": "Bacteria are slow to multiply.", "isCorrect": false },
+                    { "text": "Bacteria multiply with incredible speed.", "isCorrect": true },
+                    { "text": "Bacteria do not reproduce well.", "isCorrect": false },
+                    { "text": "Bacteria die quickly.", "isCorrect": false }
+                ]
+            },
+
+            // --- SECTION 3: SLEEPY HOLLOW ---
+            {
+                "question": "How is Ichabod Crane primarily described?",
+                "answerOptions": [
+                    { "text": "Brave and athletic", "isCorrect": false },
+                    { "text": "Timid and superstitious", "isCorrect": true },
+                    { "text": "Mean and aggressive", "isCorrect": false },
+                    { "text": "Calm and logical", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "True or False: The Headless Horseman was said to be a ghost of a soldier.",
+                "answerOptions": [
+                    { "text": "True", "isCorrect": true },
+                    { "text": "False", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "Why was Ichabod in Sleepy Hollow?",
+                "answerOptions": [
+                    { "text": "To hunt ghosts", "isCorrect": false },
+                    { "text": "To serve as a schoolteacher", "isCorrect": true },
+                    { "text": "To buy a farm", "isCorrect": false },
+                    { "text": "To visit his brother", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "Who was Brom Bones?",
+                "answerOptions": [
+                    { "text": "Ichabod's best friend", "isCorrect": false },
+                    { "text": "Ichabod's rival for Katrina's hand", "isCorrect": true },
+                    { "text": "A local doctor", "isCorrect": false },
+                    { "text": "The Headless Horseman's father", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "True or False: A smashed pumpkin was found where Ichabod disappeared.",
+                "answerOptions": [
+                    { "text": "True", "isCorrect": true },
+                    { "text": "False", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "What does Brom Bones' smile suggest at the end of the story?",
+                "answerOptions": [
+                    { "text": "He misses Ichabod.", "isCorrect": false },
+                    { "text": "He likely played a trick on Ichabod.", "isCorrect": true },
+                    { "text": "He is happy about the weather.", "isCorrect": false },
+                    { "text": "He found Ichabod's money.", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "Paraphrase: 'The legend lived on in Sleepy Hollow.'",
+                "answerOptions": [
+                    { "text": "People forgot the story.", "isCorrect": false },
+                    { "text": "The story continued to be told for a long time.", "isCorrect": true },
+                    { "text": "The story was proven to be a lie.", "isCorrect": false },
+                    { "text": "The horseman actually returned.", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "True or False: Katrina Van Tassel was the daughter of a wealthy farmer.",
+                "answerOptions": [
+                    { "text": "True", "isCorrect": true },
+                    { "text": "False", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "In the story, what did the horseman throw at Ichabod?",
+                "answerOptions": [
+                    { "text": "A sword", "isCorrect": false },
+                    { "text": "His own head (or a pumpkin)", "isCorrect": true },
+                    { "text": "A heavy rock", "isCorrect": false },
+                    { "text": "A book of rules", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "What is the tone of 'The Legend of Sleepy Hollow'?",
+                "answerOptions": [
+                    { "text": "Scientific and cold", "isCorrect": false },
+                    { "text": "Superstitious and atmospheric", "isCorrect": true },
+                    { "text": "Happy and cheerful", "isCorrect": false },
+                    { "text": "Aggressive and violent", "isCorrect": false }
+                ]
+            },
+
+            // --- SECTION 4: JACK & THE BEANSTALK ---
+            {
+                "question": "Why did Jack's mother throw the beans away?",
+                "answerOptions": [
+                    { "text": "They were rotten.", "isCorrect": false },
+                    { "text": "She thought they were worthless.", "isCorrect": true },
+                    { "text": "She was allergic to beans.", "isCorrect": false },
+                    { "text": "She wanted to plant them herself.", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "True or False: Jack stole a golden hen that laid golden eggs.",
+                "answerOptions": [
+                    { "text": "True", "isCorrect": true },
+                    { "text": "False", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "Who helped Jack in the giant's castle?",
+                "answerOptions": [
+                    { "text": "A magic cat", "isCorrect": false },
+                    { "text": "The giant's wife", "isCorrect": true },
+                    { "text": "The old man from the market", "isCorrect": false },
+                    { "text": "A talking mouse", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "What did the harp do that was unusual?",
+                "answerOptions": [
+                    { "text": "It turned into gold.", "isCorrect": false },
+                    { "text": "It played music on its own and called for its master.", "isCorrect": true },
+                    { "text": "It flew like a bird.", "isCorrect": false },
+                    { "text": "It spoke ten languages.", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "True or False: Jack chopped down the beanstalk to kill the giant.",
+                "answerOptions": [
+                    { "text": "True", "isCorrect": true },
+                    { "text": "False", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "In the sentence 'courage mixed with a bit of risk', the word 'risk' implies:",
+                "answerOptions": [
+                    { "text": "Complete safety", "isCorrect": false },
+                    { "text": "Potential for loss or danger", "isCorrect": true },
+                    { "text": "A certain reward", "isCorrect": false },
+                    { "text": "Fear of the dark", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "True or False: The giant had a terrible temper.",
+                "answerOptions": [
+                    { "text": "True", "isCorrect": true },
+                    { "text": "False", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "What happened to Jack's family at the end of the story?",
+                "answerOptions": [
+                    { "text": "They became even poorer.", "isCorrect": false },
+                    { "text": "They used the treasures wisely and improved their lives.", "isCorrect": true },
+                    { "text": "They were eaten by the giant.", "isCorrect": false },
+                    { "text": "They moved to the city.", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "Paraphrase: 'A massive beanstalk sprouted from the soil.'",
+                "answerOptions": [
+                    { "text": "A tiny plant died in the dirt.", "isCorrect": false },
+                    { "text": "A very large beanstalk grew quickly out of the ground.", "isCorrect": true },
+                    { "text": "The soil was bad for beans.", "isCorrect": false },
+                    { "text": "Jack planted a tree.", "isCorrect": false }
+                ]
+            },
+            {
+                "question": "What is the primary moral of the Jack story as per the text?",
+                "answerOptions": [
+                    { "text": "Never talk to strangers.", "isCorrect": false },
+                    { "text": "Bravery and risk can transform your future.", "isCorrect": true },
+                    { "text": "Magic is dangerous.", "isCorrect": false },
+                    { "text": "Giants are misunderstood.", "isCorrect": false }
+                ]
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let canAnswer = true;
+
+        const questionText = document.getElementById('question-text');
+        const optionsGrid = document.getElementById('options-grid');
+        const feedback = document.getElementById('feedback');
+        const feedbackResult = document.getElementById('feedback-result');
+        const feedbackRationale = document.getElementById('feedback-rationale');
+        const nextBtn = document.getElementById('next-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const stats = document.getElementById('stats');
+        const quizContainer = document.getElementById('quiz-container');
+        const resultsContainer = document.getElementById('results-container');
+        const finalScore = document.getElementById('final-score');
+
+        function loadQuestion() {
+            canAnswer = true;
+            feedback.classList.add('hidden');
+            const currentQuestion = quizData[currentQuestionIndex];
+            
+            questionText.innerText = currentQuestion.question;
+            stats.innerText = `Question ${currentQuestionIndex + 1} of ${quizData.length}`;
+            progressBar.style.width = `${((currentQuestionIndex) / quizData.length) * 100}%`;
+            
+            optionsGrid.innerHTML = '';
+            currentQuestion.answerOptions.forEach((option) => {
+                const button = document.createElement('button');
+                button.className = "option-card w-full text-left p-4 rounded-xl border-2 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all duration-200 text-lg font-medium";
+                button.innerText = option.text;
+                button.onclick = () => handleAnswer(option, button);
+                optionsGrid.appendChild(button);
+            });
+
+            quizContainer.classList.remove('fade-in');
+            void quizContainer.offsetWidth;
+            quizContainer.classList.add('fade-in');
+        }
+
+        function handleAnswer(option, button) {
+            if (!canAnswer) return;
+            canAnswer = false;
+
+            const allButtons = optionsGrid.querySelectorAll('button');
+            allButtons.forEach(btn => btn.disabled = true);
+
+            if (option.isCorrect) {
+                score++;
+                button.classList.add('border-green-500', 'bg-green-50', 'text-green-700');
+                feedbackResult.innerText = "Correct!";
+                feedback.classList.add('bg-green-50', 'border-green-500');
+            } else {
+                button.classList.add('border-red-500', 'bg-red-50', 'text-red-700');
+                feedbackResult.innerText = "Incorrect.";
+                feedback.classList.add('bg-red-50', 'border-red-500');
+                
+                const correctIdx = quizData[currentQuestionIndex].answerOptions.findIndex(o => o.isCorrect);
+                allButtons[correctIdx].classList.add('border-green-500', 'bg-green-100');
+            }
+
+            feedbackRationale.innerText = option.rationale || (option.isCorrect ? "Correct answer." : "Incorrect answer.");
+            feedback.classList.remove('hidden');
+        }
+
+        nextBtn.onclick = () => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        };
+
+        function showResults() {
+            quizContainer.classList.add('hidden');
+            progressBar.style.width = '100%';
+            resultsContainer.classList.remove('hidden');
+            finalScore.innerText = `${score} / ${quizData.length}`;
+            
+            let msg = "";
+            const percent = (score / quizData.length) * 100;
+            if (percent === 100) msg = "Masterful performance!";
+            else if (percent >= 80) msg = "Excellent understanding.";
+            else if (percent >= 50) msg = "Good effort.";
+            else msg = "Review the materials and try again.";
+            
+            document.getElementById('performance-msg').innerText = msg;
+        }
+
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
